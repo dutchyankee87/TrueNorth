@@ -108,6 +108,8 @@ export default function RitualPage() {
         .select()
         .single();
 
+      let currentDailyStateId: string | null = null;
+
       if (stateError) {
         // Might already exist for today
         const { data: existing } = await (supabase
@@ -118,12 +120,14 @@ export default function RitualPage() {
           .single();
 
         if (existing) {
+          currentDailyStateId = existing.id;
           setDailyStateId(existing.id);
         } else {
           setError("Failed to save state");
           return;
         }
       } else if (dailyState) {
+        currentDailyStateId = dailyState.id;
         setDailyStateId(dailyState.id);
       }
 
@@ -152,7 +156,7 @@ export default function RitualPage() {
         setStep("elevation_offer");
       } else {
         // Skip to guidance
-        await fetchGuidance(dailyState?.id || dailyStateId!);
+        await fetchGuidance(currentDailyStateId!);
       }
     } catch (err) {
       console.error("Check-in error:", err);
