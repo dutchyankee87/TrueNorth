@@ -1,0 +1,4 @@
+[00:12:19.747] Server  ERROR   ⨯ Error: ENOENT: no such file or directory, open '/Users/dillonrichardson/Project True North/true-north/.next/dev/server/app/_not-found/page/build-manifest.json'
+[00:12:19.761] Server  ERROR   Error: ENOENT: no such file or directory, open '/Users/dillonrichardson/Project True North/true-north/.next/dev/server/pages/_app/build-manifest.json'
+[00:12:19.773] Server  ERROR   ⨯ Error: ENOENT: no such file or directory, open '/Users/dillonrichardson/Project True North/true-north/.next/dev/server/pages/_app/build-manifest.json'
+[00:12:19.792] Server  ERROR   Error: ENOENT: no such file or directory, open '/Users/dillonrichardson/Project True North/true-north/.next/dev/server/pages/_app/build-manifest.json'
