@@ -8,6 +8,7 @@ interface CoherenceBreathingTimerProps {
   breathPattern?: string; // "5-5" = 5s inhale, 5s exhale
   onComplete: (durationSeconds: number) => void;
   onExit: () => void;
+  skippable?: boolean; // Show skip button at start
 }
 
 type BreathPhase = "inhale" | "exhale";
@@ -17,6 +18,7 @@ export function CoherenceBreathingTimer({
   breathPattern = "5-5",
   onComplete,
   onExit,
+  skippable = false,
 }: CoherenceBreathingTimerProps) {
   // Parse breath pattern
   const [inhaleSeconds, exhaleSeconds] = breathPattern.split("-").map(Number);
@@ -163,13 +165,22 @@ export function CoherenceBreathingTimer({
         </div>
       </div>
 
-      {/* Exit button (subtle, bottom corner) */}
-      <button
-        onClick={onExit}
-        className="absolute bottom-8 right-8 text-text-muted hover:text-text-secondary text-sm transition-colors"
-      >
-        Exit
-      </button>
+      {/* Skip button (if skippable) or Exit button */}
+      {skippable ? (
+        <button
+          onClick={onExit}
+          className="absolute bottom-8 right-8 text-text-muted hover:text-text-secondary text-sm transition-colors"
+        >
+          Skip breathing →
+        </button>
+      ) : (
+        <button
+          onClick={onExit}
+          className="absolute bottom-8 right-8 text-text-muted hover:text-text-secondary text-sm transition-colors"
+        >
+          Exit
+        </button>
+      )}
 
       {/* Breath guidance hint */}
       <p className="absolute bottom-8 left-8 text-text-muted text-sm">

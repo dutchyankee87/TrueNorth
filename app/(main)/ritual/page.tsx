@@ -11,7 +11,6 @@ import {
   PostPracticeCheck,
   GuidanceDisplay,
   CoherenceBreathingTimer,
-  FutureSelfVisualization,
   PostMeditationDump,
   ExtractionReview,
   EmbodimentGuidance,
@@ -25,9 +24,7 @@ import type {
   Practice,
   GuidanceEvent,
   PostShift,
-  PostMeditationState,
   EmbodimentShift,
-  IdentityAnchor,
 } from "@/lib/supabase/types";
 import type { MeditationExtractionResult } from "@/lib/llm/meditation-extraction";
 import type { EmbodimentResult } from "@/lib/llm/embodiment-engine";
@@ -37,10 +34,7 @@ type RitualStep =
   | "loading"
   | "check_existing"
   // New meditation flow
-  | "meditation_setup" // Choose duration
-  | "future_self_viz" // Optional visualization
-  | "coherence_breathing" // Main meditation
-  | "post_meditation_state" // How do you feel?
+  | "coherence_breathing" // Optional breathing (skippable)
   | "post_meditation_dump" // Brain dump
   | "extraction_review" // Review AI extractions
   | "embodiment" // EMBODY guidance
@@ -66,23 +60,15 @@ interface StateGateResponse {
   practice: Practice | null;
 }
 
-const MEDITATION_DURATIONS = [
-  { minutes: 5, label: "5 minutes", description: "Quick centering" },
-  { minutes: 10, label: "10 minutes", description: "Standard practice" },
-  { minutes: 15, label: "15 minutes", description: "Deep coherence" },
-  { minutes: 20, label: "20 minutes", description: "Extended practice" },
-];
+// Default breathing duration (3 minutes for quick centering)
+const DEFAULT_BREATHING_MINUTES = 3;
 
 export default function RitualPage() {
   const router = useRouter();
   const [step, setStep] = useState<RitualStep>("loading");
   const [error, setError] = useState<string | null>(null);
 
-  // Identity anchor for visualization
-  const [identityAnchor, setIdentityAnchor] = useState<IdentityAnchor | null>(null);
-
   // Meditation flow state
-  const [meditationDuration, setMeditationDuration] = useState(10);
   const [meditationSessionId, setMeditationSessionId] = useState<string | null>(null);
   const [extractionResult, setExtractionResult] = useState<MeditationExtractionResult | null>(null);
   const [embodimentResult, setEmbodimentResult] = useState<EmbodimentResult | null>(null);
@@ -131,18 +117,8 @@ export default function RitualPage() {
         return;
       }
 
-      // Fetch identity anchor for visualization
-      const { data: anchor } = await (supabase
-        .from("identity_anchors") as any)
-        .select("*")
-        .single();
-
-      if (anchor) {
-        setIdentityAnchor(anchor);
-      }
-
-      // Start fresh meditation flow
-      setStep("meditation_setup");
+      // Start fresh - go to breathing (which is skippable)
+      setStep("coherence_breathing");
     }
 
     checkExisting();
@@ -150,80 +126,36 @@ export default function RitualPage() {
 
   // --- MEDITATION FLOW HANDLERS ---
 
-  async function handleMeditationSetup(minutes: number, skipViz: boolean) {
-    setMeditationDuration(minutes);
-
+  async function startMeditationSession() {
     try {
-      // Start meditation session
       const response = await fetch("/api/meditation", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "start",
-          coherenceDurationSeconds: minutes * 60,
+          coherenceDurationSeconds: DEFAULT_BREATHING_MINUTES * 60,
           breathPattern: "5-5",
-          didFutureSelfViz: !skipViz,
+          didFutureSelfViz: false,
         }),
       });
 
       const result = await response.json();
-      if (!result.success) {
-        setError(result.error || "Failed to start meditation");
-        return;
-      }
-
-      setMeditationSessionId(result.data.id);
-
-      if (skipViz) {
-        setStep("coherence_breathing");
-      } else {
-        setStep("future_self_viz");
+      if (result.success) {
+        setMeditationSessionId(result.data.id);
       }
     } catch (err) {
-      console.error("Meditation setup error:", err);
-      setError("Something went wrong");
+      console.error("Meditation session start error:", err);
     }
-  }
-
-  function handleFutureSelfComplete() {
-    setStep("coherence_breathing");
-  }
-
-  function handleFutureSelfSkip() {
-    setStep("coherence_breathing");
   }
 
   function handleBreathingComplete(durationSeconds: number) {
-    // For now, go straight to post-meditation state question
-    // Duration is already tracked in the session
-    setStep("post_meditation_state");
+    // After breathing, go to brain dump
+    setStep("post_meditation_dump");
   }
 
-  function handleBreathingExit() {
-    // User exited early - still go to post-meditation state
-    setStep("post_meditation_state");
-  }
-
-  async function handlePostMeditationState(state: PostMeditationState) {
-    if (!meditationSessionId) return;
-
-    try {
-      // Complete the meditation session with state
-      await fetch("/api/meditation", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "complete",
-          meditationSessionId,
-          postMeditationState: state,
-        }),
-      });
-
-      setStep("post_meditation_dump");
-    } catch (err) {
-      console.error("Post-meditation state error:", err);
-      setStep("post_meditation_dump"); // Continue anyway
-    }
+  function handleBreathingSkip() {
+    // Skip breathing entirely, go straight to brain dump
+    setStep("post_meditation_dump");
   }
 
   async function handlePostMeditationDump(content: string) {
@@ -669,7 +601,7 @@ export default function RitualPage() {
           <button
             onClick={() => {
               setError(null);
-              setStep("meditation_setup");
+              setStep("coherence_breathing");
             }}
             className="text-accent hover:underline"
           >
@@ -682,107 +614,20 @@ export default function RitualPage() {
 
   // --- MEDITATION FLOW ---
 
-  if (step === "meditation_setup") {
-    return (
-      <div className="min-h-screen bg-bg-primary flex flex-col items-center justify-center px-6">
-        <div className="max-w-md text-center">
-          <h1 className="text-2xl font-medium text-text-primary mb-2">
-            Morning Practice
-          </h1>
-          <p className="text-text-secondary mb-8">
-            How long would you like to meditate?
-          </p>
-
-          <div className="space-y-3 mb-8">
-            {MEDITATION_DURATIONS.map((option) => (
-              <button
-                key={option.minutes}
-                onClick={() => setMeditationDuration(option.minutes)}
-                className={`w-full p-4 rounded-lg border transition-colors text-left ${
-                  meditationDuration === option.minutes
-                    ? "bg-bg-secondary border-text-muted"
-                    : "bg-transparent border-border hover:border-text-muted"
-                }`}
-              >
-                <span className="font-medium text-text-primary">{option.label}</span>
-                <span className="text-text-muted text-sm ml-2">{option.description}</span>
-              </button>
-            ))}
-          </div>
-
-          <div className="space-y-3">
-            <button
-              onClick={() => handleMeditationSetup(meditationDuration, false)}
-              className="w-full py-4 bg-text-primary text-bg-primary rounded-lg font-medium hover:bg-text-secondary transition-colors"
-            >
-              Begin with visualization
-            </button>
-            <button
-              onClick={() => handleMeditationSetup(meditationDuration, true)}
-              className="w-full py-4 text-text-muted hover:text-text-secondary transition-colors"
-            >
-              Skip to breathing
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (step === "future_self_viz") {
-    return (
-      <FutureSelfVisualization
-        futureVision={identityAnchor?.future_vision || null}
-        elevatedEmotions={identityAnchor?.elevated_emotions || []}
-        onComplete={handleFutureSelfComplete}
-        onSkip={handleFutureSelfSkip}
-      />
-    );
-  }
-
   if (step === "coherence_breathing") {
+    // Start a meditation session in the background when breathing starts
+    if (!meditationSessionId) {
+      startMeditationSession();
+    }
+
     return (
       <CoherenceBreathingTimer
-        durationMinutes={meditationDuration}
+        durationMinutes={DEFAULT_BREATHING_MINUTES}
         breathPattern="5-5"
         onComplete={handleBreathingComplete}
-        onExit={handleBreathingExit}
+        onExit={handleBreathingSkip}
+        skippable={true}
       />
-    );
-  }
-
-  if (step === "post_meditation_state") {
-    return (
-      <div className="min-h-screen bg-bg-primary flex flex-col items-center justify-center px-6">
-        <div className="max-w-md text-center">
-          <h1 className="text-2xl font-medium text-text-primary mb-8">
-            How do you feel?
-          </h1>
-
-          <div className="space-y-3">
-            <StateButton
-              label="Expanded"
-              description="Open, spacious, connected to something larger"
-              onClick={() => handlePostMeditationState("expanded")}
-            />
-            <StateButton
-              label="Calm"
-              description="Peaceful, centered, at ease"
-              onClick={() => handlePostMeditationState("calm")}
-            />
-            <StateButton
-              label="Neutral"
-              description="Present but unchanged"
-              onClick={() => handlePostMeditationState("neutral")}
-            />
-            <StateButton
-              label="Distracted"
-              description="Mind was busy, couldn't settle"
-              onClick={() => handlePostMeditationState("distracted")}
-            />
-          </div>
-        </div>
-      </div>
     );
   }
 
@@ -870,25 +715,4 @@ export default function RitualPage() {
   }
 
   return null;
-}
-
-// Helper component
-function StateButton({
-  label,
-  description,
-  onClick,
-}: {
-  label: string;
-  description: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className="w-full text-left p-4 rounded-lg bg-bg-secondary border border-border hover:border-text-muted transition-colors"
-    >
-      <p className="text-text-primary font-medium">{label}</p>
-      <p className="text-text-muted text-sm">{description}</p>
-    </button>
-  );
 }
