@@ -61,6 +61,84 @@ export async function POST(request: NextRequest) {
   }
 }
 
+export async function PATCH(request: NextRequest) {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id, status } = await request.json();
+
+    if (!id) {
+      return NextResponse.json({ error: "Loop ID is required" }, { status: 400 });
+    }
+
+    const validStatuses = ["open", "closed", "archived"];
+    if (status && !validStatuses.includes(status)) {
+      return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+    }
+
+    // Update the loop (only if owned by user)
+    const updated = await db
+      .update(openLoops)
+      .set({
+        status,
+        closedAt: status === "closed" || status === "archived" ? new Date() : null,
+      })
+      .where(and(eq(openLoops.id, id), eq(openLoops.userId, user.id)))
+      .returning()
+      .then(rows => rows[0]);
+
+    if (!updated) {
+      return NextResponse.json({ error: "Loop not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true, data: updated });
+  } catch (error) {
+    console.error("Loop update error:", error);
+    const message = error instanceof Error ? error.message : "Failed to update loop";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json({ error: "Loop ID is required" }, { status: 400 });
+    }
+
+    // Delete the loop (only if owned by user)
+    const deleted = await db
+      .delete(openLoops)
+      .where(and(eq(openLoops.id, id), eq(openLoops.userId, user.id)))
+      .returning()
+      .then(rows => rows[0]);
+
+    if (!deleted) {
+      return NextResponse.json({ error: "Loop not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Loop delete error:", error);
+    const message = error instanceof Error ? error.message : "Failed to delete loop";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();

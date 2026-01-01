@@ -25,6 +25,7 @@ export default function LoopsPage() {
   const [loops, setLoops] = useState<OpenLoop[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   // Filter state
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -75,6 +76,93 @@ export default function LoopsPage() {
   // Group loops by status
   const openLoops = filteredLoops.filter((l) => l.status === "open");
   const closedLoops = filteredLoops.filter((l) => l.status === "closed");
+  const archivedLoops = filteredLoops.filter((l) => l.status === "archived");
+
+  // Archive a loop
+  async function archiveLoop(id: string) {
+    setActionLoading(id);
+    try {
+      const response = await fetch("/api/loops", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status: "archived" }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        setError(data.error || "Failed to archive loop");
+        return;
+      }
+
+      // Update local state
+      setLoops((prev) =>
+        prev.map((loop) =>
+          loop.id === id ? { ...loop, status: "archived" } : loop
+        )
+      );
+    } catch (err) {
+      console.error("Failed to archive loop:", err);
+      setError("Something went wrong");
+    } finally {
+      setActionLoading(null);
+    }
+  }
+
+  // Delete a loop
+  async function deleteLoop(id: string) {
+    if (!confirm("Permanently delete this loop?")) return;
+
+    setActionLoading(id);
+    try {
+      const response = await fetch(`/api/loops?id=${id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        setError(data.error || "Failed to delete loop");
+        return;
+      }
+
+      // Remove from local state
+      setLoops((prev) => prev.filter((loop) => loop.id !== id));
+    } catch (err) {
+      console.error("Failed to delete loop:", err);
+      setError("Something went wrong");
+    } finally {
+      setActionLoading(null);
+    }
+  }
+
+  // Restore an archived loop
+  async function restoreLoop(id: string) {
+    setActionLoading(id);
+    try {
+      const response = await fetch("/api/loops", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status: "open" }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        setError(data.error || "Failed to restore loop");
+        return;
+      }
+
+      // Update local state
+      setLoops((prev) =>
+        prev.map((loop) =>
+          loop.id === id ? { ...loop, status: "open" } : loop
+        )
+      );
+    } catch (err) {
+      console.error("Failed to restore loop:", err);
+      setError("Something went wrong");
+    } finally {
+      setActionLoading(null);
+    }
+  }
 
   // Helper to format relative time
   function formatRelativeTime(dateString: string): string {
@@ -250,10 +338,28 @@ export default function LoopsPage() {
                       </div>
                     </div>
 
-                    {/* Created date */}
-                    <p className="text-xs text-text-muted">
-                      Added {formatRelativeTime(loop.createdAt)}
-                    </p>
+                    {/* Footer with date and actions */}
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-text-muted">
+                        Added {formatRelativeTime(loop.createdAt)}
+                      </p>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => archiveLoop(loop.id)}
+                          disabled={actionLoading === loop.id}
+                          className="text-xs text-text-muted hover:text-text-secondary transition-colors disabled:opacity-50"
+                        >
+                          {actionLoading === loop.id ? "..." : "Archive"}
+                        </button>
+                        <button
+                          onClick={() => deleteLoop(loop.id)}
+                          disabled={actionLoading === loop.id}
+                          className="text-xs text-text-muted hover:text-red-500 transition-colors disabled:opacity-50"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </Card>
               ))}
@@ -263,7 +369,7 @@ export default function LoopsPage() {
 
         {/* Closed Loops */}
         {closedLoops.length > 0 && (
-          <div>
+          <div className="mb-8">
             <h2 className="text-sm font-medium text-text-muted uppercase tracking-wide mb-4">
               Closed ({closedLoops.length})
             </h2>
@@ -274,11 +380,70 @@ export default function LoopsPage() {
                     <p className="text-text-secondary line-through">
                       {loop.description}
                     </p>
-                    {loop.domain && (
-                      <span className="px-2 py-0.5 bg-bg-secondary text-text-muted rounded text-sm">
-                        {loop.domain.name}
-                      </span>
-                    )}
+                    <div className="flex items-center justify-between">
+                      {loop.domain && (
+                        <span className="px-2 py-0.5 bg-bg-secondary text-text-muted rounded text-sm">
+                          {loop.domain.name}
+                        </span>
+                      )}
+                      <div className="flex gap-2 ml-auto">
+                        <button
+                          onClick={() => restoreLoop(loop.id)}
+                          disabled={actionLoading === loop.id}
+                          className="text-xs text-text-muted hover:text-accent transition-colors disabled:opacity-50"
+                        >
+                          {actionLoading === loop.id ? "..." : "Restore"}
+                        </button>
+                        <button
+                          onClick={() => deleteLoop(loop.id)}
+                          disabled={actionLoading === loop.id}
+                          className="text-xs text-text-muted hover:text-red-500 transition-colors disabled:opacity-50"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Archived Loops */}
+        {archivedLoops.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-sm font-medium text-text-muted uppercase tracking-wide mb-4">
+              Archived ({archivedLoops.length})
+            </h2>
+            <div className="space-y-3">
+              {archivedLoops.map((loop) => (
+                <Card key={loop.id} className="opacity-50">
+                  <div className="space-y-2">
+                    <p className="text-text-muted">{loop.description}</p>
+                    <div className="flex items-center justify-between">
+                      {loop.domain && (
+                        <span className="px-2 py-0.5 bg-bg-secondary text-text-muted rounded text-sm">
+                          {loop.domain.name}
+                        </span>
+                      )}
+                      <div className="flex gap-2 ml-auto">
+                        <button
+                          onClick={() => restoreLoop(loop.id)}
+                          disabled={actionLoading === loop.id}
+                          className="text-xs text-text-muted hover:text-accent transition-colors disabled:opacity-50"
+                        >
+                          {actionLoading === loop.id ? "..." : "Restore"}
+                        </button>
+                        <button
+                          onClick={() => deleteLoop(loop.id)}
+                          disabled={actionLoading === loop.id}
+                          className="text-xs text-text-muted hover:text-red-500 transition-colors disabled:opacity-50"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </Card>
               ))}
