@@ -15,6 +15,7 @@ import {
   ExtractionReview,
   EmbodimentGuidance,
   ActionOptIn,
+  RitualPreparation,
 } from "@/components/ritual";
 import type { ConfirmedExtractions } from "@/components/ritual/ExtractionReview";
 import type {
@@ -33,6 +34,7 @@ import type { EmbodimentResult } from "@/lib/llm/embodiment-engine";
 type RitualStep =
   | "loading"
   | "check_existing"
+  | "preparation" // NEW: Entry point - arrive centered
   // New meditation flow
   | "coherence_breathing" // Optional breathing (skippable)
   | "post_meditation_dump" // Brain dump
@@ -117,12 +119,24 @@ export default function RitualPage() {
         return;
       }
 
-      // Start fresh - go to breathing (which is skippable)
-      setStep("coherence_breathing");
+      // Start fresh - go to preparation screen
+      setStep("preparation");
     }
 
     checkExisting();
   }, []);
+
+  // --- PREPARATION HANDLERS ---
+
+  function handleDoBreathing() {
+    setStep("coherence_breathing");
+  }
+
+  function handleSkipToCheckIn() {
+    // Skip breathing entirely, go straight to brain dump
+    startMeditationSession();
+    setStep("post_meditation_dump");
+  }
 
   // --- MEDITATION FLOW HANDLERS ---
 
@@ -601,7 +615,7 @@ export default function RitualPage() {
           <button
             onClick={() => {
               setError(null);
-              setStep("coherence_breathing");
+              setStep("preparation");
             }}
             className="text-accent hover:underline"
           >
@@ -609,6 +623,17 @@ export default function RitualPage() {
           </button>
         </div>
       </div>
+    );
+  }
+
+  // --- PREPARATION ---
+
+  if (step === "preparation") {
+    return (
+      <RitualPreparation
+        onDoBreathing={handleDoBreathing}
+        onSkipToCheckIn={handleSkipToCheckIn}
+      />
     );
   }
 

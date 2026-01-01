@@ -1,9 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { Button, Card } from "@/components/shared";
 
-// Type for identity anchor data from the database
 interface IdentityAnchor {
   id: string;
   coreIdentity: string;
@@ -16,7 +14,7 @@ interface IdentityAnchor {
   elevatedEmotions: string[] | null;
 }
 
-// Speech recognition type declarations
+// Speech recognition types
 interface SpeechRecognitionEvent extends Event {
   results: SpeechRecognitionResultList;
   resultIndex: number;
@@ -59,52 +57,27 @@ declare global {
   }
 }
 
-// Pillar icons
-const pillarIcons: Record<string, string> = {
-  founder: "🚀",
-  father: "👨‍👧‍👦",
-  athlete: "💪",
-  husband: "💑",
-  freelancer: "💼",
-  creator: "🎨",
-  leader: "👑",
-  mentor: "🎓",
-  builder: "🔨",
-  investor: "📈",
-  writer: "✍️",
-  speaker: "🎤",
-  default: "⭐",
-};
-
-function getPillarIcon(pillar: string): string {
-  const lowerPillar = pillar.toLowerCase();
-  for (const [key, icon] of Object.entries(pillarIcons)) {
-    if (lowerPillar.includes(key)) {
-      return icon;
-    }
-  }
-  return pillarIcons.default;
-}
+const ELEVATED_EMOTIONS = [
+  "Gratitude", "Joy", "Love", "Freedom", "Abundance", "Peace",
+  "Empowerment", "Confidence", "Creativity", "Connection", "Clarity", "Trust",
+];
 
 export default function IdentityPage() {
-  // State for the identity data
   const [identity, setIdentity] = useState<IdentityAnchor | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Edit mode state
-  const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [editingSection, setEditingSection] = useState<string | null>(null);
 
-  // Voice input state
+  // Voice input
   const [isListening, setIsListening] = useState(false);
   const [speechSupported, setSpeechSupported] = useState(false);
   const [voiceDump, setVoiceDump] = useState("");
   const [isProcessingVoice, setIsProcessingVoice] = useState(false);
-  const [showVoiceInput, setShowVoiceInput] = useState(false);
+  const [showVoiceModal, setShowVoiceModal] = useState(false);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
 
-  // Form state (mirrors identity but for editing)
+  // Form state
   const [formData, setFormData] = useState({
     coreIdentity: "",
     primaryConstraint: "",
@@ -115,12 +88,6 @@ export default function IdentityPage() {
     leavingBehind: ["", "", ""],
     elevatedEmotions: [] as string[],
   });
-
-  // Available elevated emotions for selection
-  const availableEmotions = [
-    "Gratitude", "Joy", "Love", "Freedom", "Abundance", "Peace",
-    "Empowerment", "Confidence", "Creativity", "Connection", "Clarity", "Trust",
-  ];
 
   // Initialize speech recognition
   useEffect(() => {
@@ -135,27 +102,19 @@ export default function IdentityPage() {
 
         recognition.onresult = (event: SpeechRecognitionEvent) => {
           let finalTranscript = "";
-
           for (let i = event.resultIndex; i < event.results.length; i++) {
             const transcript = event.results[i][0].transcript;
             if (event.results[i].isFinal) {
               finalTranscript += transcript + " ";
             }
           }
-
           if (finalTranscript) {
             setVoiceDump((prev) => prev + finalTranscript);
           }
         };
 
-        recognition.onerror = () => {
-          setIsListening(false);
-        };
-
-        recognition.onend = () => {
-          setIsListening(false);
-        };
-
+        recognition.onerror = () => setIsListening(false);
+        recognition.onend = () => setIsListening(false);
         recognitionRef.current = recognition;
       }
     }
@@ -167,7 +126,6 @@ export default function IdentityPage() {
     };
   }, []);
 
-  // Fetch identity data on mount
   useEffect(() => {
     fetchIdentity();
   }, []);
@@ -184,7 +142,6 @@ export default function IdentityPage() {
 
       if (data.identity) {
         setIdentity(data.identity);
-        // Populate form with existing data
         setFormData({
           coreIdentity: data.identity.coreIdentity || "",
           primaryConstraint: data.identity.primaryConstraint || "",
@@ -193,7 +150,7 @@ export default function IdentityPage() {
           currentPhase: data.identity.currentPhase || "",
           futureVision: data.identity.futureVision || "",
           leavingBehind: data.identity.leavingBehind?.length
-            ? [...data.identity.leavingBehind, "", "", ""].slice(0, Math.max(3, data.identity.leavingBehind.length))
+            ? [...data.identity.leavingBehind, "", ""].slice(0, Math.max(3, data.identity.leavingBehind.length))
             : ["", "", ""],
           elevatedEmotions: data.identity.elevatedEmotions || [],
         });
@@ -232,9 +189,8 @@ export default function IdentityPage() {
         return;
       }
 
-      // Refresh data and exit edit mode
       await fetchIdentity();
-      setIsEditing(false);
+      setEditingSection(null);
     } catch (err) {
       console.error("Save error:", err);
       setError("Something went wrong");
@@ -244,17 +200,12 @@ export default function IdentityPage() {
   }
 
   function toggleEmotion(emotion: string) {
-    if (formData.elevatedEmotions.includes(emotion)) {
-      setFormData({
-        ...formData,
-        elevatedEmotions: formData.elevatedEmotions.filter(e => e !== emotion),
-      });
-    } else {
-      setFormData({
-        ...formData,
-        elevatedEmotions: [...formData.elevatedEmotions, emotion],
-      });
-    }
+    setFormData(prev => ({
+      ...prev,
+      elevatedEmotions: prev.elevatedEmotions.includes(emotion)
+        ? prev.elevatedEmotions.filter(e => e !== emotion)
+        : [...prev.elevatedEmotions, emotion],
+    }));
   }
 
   function updateLeavingBehind(index: number, value: string) {
@@ -263,19 +214,10 @@ export default function IdentityPage() {
     setFormData({ ...formData, leavingBehind: updated });
   }
 
-  function addLeavingBehind() {
-    setFormData({
-      ...formData,
-      leavingBehind: [...formData.leavingBehind, ""],
-    });
-  }
-
   function toggleListening() {
     if (!recognitionRef.current) return;
-
     if (isListening) {
       recognitionRef.current.stop();
-      setIsListening(false);
     } else {
       recognitionRef.current.start();
       setIsListening(true);
@@ -284,7 +226,6 @@ export default function IdentityPage() {
 
   async function processVoiceDump() {
     if (!voiceDump.trim() || isProcessingVoice) return;
-
     setIsProcessingVoice(true);
     setError(null);
 
@@ -299,12 +240,8 @@ export default function IdentityPage() {
       });
 
       const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to process");
 
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to process");
-      }
-
-      // Apply the updates to form data
       if (data.updates) {
         setFormData(prev => ({
           ...prev,
@@ -312,8 +249,8 @@ export default function IdentityPage() {
           leavingBehind: data.updates.leavingBehind || prev.leavingBehind,
           elevatedEmotions: data.updates.elevatedEmotions || prev.elevatedEmotions,
         }));
-        setIsEditing(true);
-        setShowVoiceInput(false);
+        setEditingSection("all");
+        setShowVoiceModal(false);
         setVoiceDump("");
       }
     } catch (err) {
@@ -323,110 +260,131 @@ export default function IdentityPage() {
     }
   }
 
-  // Parse identity pillars
   const identityPillars = identity?.coreIdentity
-    ? identity.coreIdentity
-        .split(/[,\n]/)
-        .map((s) => s.trim())
-        .filter((s) => s.length > 0)
+    ? identity.coreIdentity.split(/[,\n]/).map(s => s.trim()).filter(s => s.length > 0)
     : [];
 
-  // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-bg-primary">
-        <p className="text-text-muted">Loading...</p>
+      <div className="min-h-screen flex items-center justify-center bg-[#FAFAF9]">
+        <div className="w-5 h-5 border-2 border-stone-300 border-t-stone-600 rounded-full animate-spin" />
       </div>
     );
   }
 
-  // No identity yet - prompt to complete onboarding
-  if (!identity && !isEditing) {
+  if (!identity && editingSection !== "all") {
     return (
-      <div className="min-h-screen flex flex-col px-6 py-8 bg-bg-primary safe-area-top safe-area-bottom">
-        <div className="flex-1 flex flex-col items-center justify-center text-center max-w-md mx-auto">
-          <h1 className="text-2xl font-semibold text-text-primary mb-4">
+      <div className="min-h-screen flex flex-col items-center justify-center px-6 bg-[#FAFAF9]">
+        <div className="text-center max-w-sm">
+          <p className="text-stone-400 text-sm tracking-wide uppercase mb-3">
             Identity not set
-          </h1>
-          <p className="text-text-secondary mb-8">
-            Complete onboarding to define who you&apos;re becoming.
           </p>
-          <Button onClick={() => window.location.href = "/onboarding"}>
+          <h1 className="text-2xl text-stone-900 font-light mb-4">
+            Who are you becoming?
+          </h1>
+          <p className="text-stone-500 mb-8 leading-relaxed">
+            Complete onboarding to define your identity and vision.
+          </p>
+          <button
+            onClick={() => window.location.href = "/onboarding"}
+            className="px-8 py-3 bg-stone-900 text-white text-sm tracking-wide rounded-full hover:bg-stone-800 transition-colors"
+          >
             Start Onboarding
-          </Button>
+          </button>
         </div>
       </div>
     );
   }
+
+  const isEditing = editingSection !== null;
 
   return (
-    <div className="min-h-screen bg-bg-primary safe-area-top safe-area-bottom pb-24 lg:pb-8">
-      <div className="max-w-2xl mx-auto px-6 py-8">
+    <div className="min-h-screen bg-[#FAFAF9] safe-area-top safe-area-bottom">
+      <div className="max-w-2xl mx-auto px-6 py-12 pb-32 lg:pb-12">
+
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-2xl font-semibold text-text-primary">
-              Identity & Vision
-            </h1>
-            <p className="text-text-secondary mt-1">
-              Who you&apos;re becoming and where you&apos;re headed
-            </p>
+        <header className="mb-12">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-stone-400 text-xs tracking-[0.2em] uppercase mb-2">
+                Identity & Vision
+              </p>
+              <h1 className="text-3xl text-stone-900 font-light tracking-tight">
+                Who you're becoming
+              </h1>
+            </div>
+            <div className="flex gap-2">
+              {speechSupported && !isEditing && (
+                <button
+                  onClick={() => setShowVoiceModal(true)}
+                  className="p-3 rounded-full border border-stone-200 text-stone-500 hover:border-stone-300 hover:text-stone-700 transition-colors"
+                  title="Voice update"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
+                  </svg>
+                </button>
+              )}
+              {!isEditing && (
+                <button
+                  onClick={() => setEditingSection("all")}
+                  className="px-5 py-2.5 rounded-full border border-stone-200 text-stone-600 text-sm hover:border-stone-300 hover:text-stone-800 transition-colors"
+                >
+                  Edit
+                </button>
+              )}
+            </div>
           </div>
-          <div className="flex gap-2">
-            {speechSupported && !isEditing && (
-              <Button variant="secondary" onClick={() => setShowVoiceInput(!showVoiceInput)}>
-                {showVoiceInput ? "Cancel" : "🎤 Voice"}
-              </Button>
-            )}
-            {!isEditing && !showVoiceInput && (
-              <Button variant="secondary" onClick={() => setIsEditing(true)}>
-                Edit
-              </Button>
-            )}
-          </div>
-        </div>
+        </header>
 
         {/* Error message */}
         {error && (
-          <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
+          <div className="mb-8 p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 text-sm">
             {error}
           </div>
         )}
 
-        {/* Voice Input Mode */}
-        {showVoiceInput && (
-          <Card className="mb-6">
-            <div className="space-y-4">
-              <div>
-                <h3 className="font-medium text-text-primary mb-2">
-                  Voice Update
-                </h3>
-                <p className="text-sm text-text-secondary">
-                  Speak freely about who you&apos;re becoming, what&apos;s changed, or new aspects of your identity.
-                  The system will extract and update your profile.
-                </p>
+        {/* Voice Modal */}
+        {showVoiceModal && (
+          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-6">
+            <div className="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl">
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <h2 className="text-xl text-stone-900 font-medium">Voice Update</h2>
+                  <p className="text-stone-500 text-sm mt-1">
+                    Speak freely about your evolving identity
+                  </p>
+                </div>
+                <button
+                  onClick={() => { setShowVoiceModal(false); setVoiceDump(""); }}
+                  className="text-stone-400 hover:text-stone-600"
+                >
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
               </div>
 
-              <div className="relative">
+              <div className="relative mb-4">
                 <textarea
                   value={voiceDump}
                   onChange={(e) => setVoiceDump(e.target.value)}
-                  placeholder="Speak or type about your identity... e.g., 'I'm also becoming a mentor now, and I want to focus more on creativity...'"
+                  placeholder="I'm becoming more focused on..."
                   rows={4}
-                  className="w-full px-4 py-3 pr-14 rounded-xl border border-border bg-white text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent resize-none"
+                  className="w-full px-4 py-4 pr-14 rounded-2xl border border-stone-200 bg-stone-50 text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-300 resize-none"
                 />
                 <button
                   type="button"
                   onClick={toggleListening}
-                  className={`absolute bottom-3 right-3 w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                  className={`absolute bottom-4 right-4 w-10 h-10 rounded-full flex items-center justify-center transition-all ${
                     isListening
                       ? "bg-red-500 text-white animate-pulse"
-                      : "bg-bg-secondary text-text-secondary hover:bg-bg-tertiary"
+                      : "bg-stone-200 text-stone-600 hover:bg-stone-300"
                   }`}
                 >
                   {isListening ? (
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                      <rect x="6" y="6" width="12" height="12" rx="1" />
+                      <rect x="6" y="6" width="12" height="12" rx="2" />
                     </svg>
                   ) : (
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -437,286 +395,322 @@ export default function IdentityPage() {
               </div>
 
               {isListening && (
-                <div className="flex items-center gap-2 text-sm text-red-500">
+                <p className="text-red-500 text-sm mb-4 flex items-center gap-2">
                   <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
                   Listening...
-                </div>
+                </p>
               )}
 
-              <Button
+              <button
                 onClick={processVoiceDump}
                 disabled={!voiceDump.trim() || isProcessingVoice}
-                fullWidth
+                className="w-full py-3 bg-stone-900 text-white text-sm tracking-wide rounded-full hover:bg-stone-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {isProcessingVoice ? "Processing..." : "Update Identity"}
-              </Button>
+              </button>
             </div>
-          </Card>
+          </div>
         )}
 
-        {/* Edit Mode */}
+        {/* Content */}
         {isEditing ? (
-          <div className="space-y-8">
-            {/* Core Identity Section */}
-            <Card>
-              <h2 className="text-lg font-semibold text-text-primary mb-4">
-                Core Identity
-              </h2>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-1">
-                    Who are you becoming? (comma-separated roles)
-                  </label>
-                  <textarea
-                    value={formData.coreIdentity}
-                    onChange={(e) => setFormData({ ...formData, coreIdentity: e.target.value })}
-                    placeholder="e.g., Founder, Father, Athlete, Creator"
-                    rows={2}
-                    className="w-full px-4 py-3 rounded-xl border border-border bg-white text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent resize-none"
+          /* Edit Mode */
+          <div className="space-y-12">
+
+            {/* Identity Pillars */}
+            <section>
+              <label className="block text-stone-400 text-xs tracking-[0.15em] uppercase mb-3">
+                Identity Pillars
+              </label>
+              <textarea
+                value={formData.coreIdentity}
+                onChange={(e) => setFormData({ ...formData, coreIdentity: e.target.value })}
+                placeholder="Founder, Father, Athlete, Creator..."
+                rows={2}
+                className="w-full px-5 py-4 rounded-2xl border border-stone-200 bg-white text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-300 resize-none text-lg"
+              />
+              <p className="text-stone-400 text-xs mt-2">Separate with commas</p>
+            </section>
+
+            {/* Current Phase */}
+            <section>
+              <label className="block text-stone-400 text-xs tracking-[0.15em] uppercase mb-3">
+                Current Phase
+              </label>
+              <input
+                value={formData.currentPhase}
+                onChange={(e) => setFormData({ ...formData, currentPhase: e.target.value })}
+                placeholder="Where you are in your journey..."
+                className="w-full px-5 py-4 rounded-2xl border border-stone-200 bg-white text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-300"
+              />
+            </section>
+
+            {/* Future Vision */}
+            <section>
+              <label className="block text-stone-400 text-xs tracking-[0.15em] uppercase mb-3">
+                Your Vision
+              </label>
+              <textarea
+                value={formData.futureVision}
+                onChange={(e) => setFormData({ ...formData, futureVision: e.target.value })}
+                placeholder="Describe your future as if it's already happening..."
+                rows={5}
+                className="w-full px-5 py-4 rounded-2xl border border-stone-200 bg-white text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-300 resize-none leading-relaxed"
+              />
+            </section>
+
+            {/* Elevated Emotions */}
+            <section>
+              <label className="block text-stone-400 text-xs tracking-[0.15em] uppercase mb-4">
+                Emotions to Cultivate
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {ELEVATED_EMOTIONS.map((emotion) => {
+                  const isSelected = formData.elevatedEmotions.includes(emotion);
+                  return (
+                    <button
+                      key={emotion}
+                      type="button"
+                      onClick={() => toggleEmotion(emotion)}
+                      className={`px-4 py-2 rounded-full text-sm transition-all ${
+                        isSelected
+                          ? "bg-stone-900 text-white"
+                          : "bg-stone-100 text-stone-600 hover:bg-stone-200"
+                      }`}
+                    >
+                      {emotion}
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+
+            {/* Leaving Behind */}
+            <section>
+              <label className="block text-stone-400 text-xs tracking-[0.15em] uppercase mb-3">
+                Leaving Behind
+              </label>
+              <div className="space-y-3">
+                {formData.leavingBehind.map((item, index) => (
+                  <input
+                    key={index}
+                    value={item}
+                    onChange={(e) => updateLeavingBehind(index, e.target.value)}
+                    placeholder="Old pattern or identity..."
+                    className="w-full px-5 py-4 rounded-2xl border border-stone-200 bg-white text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-300"
                   />
-                  <p className="text-xs text-text-muted mt-1">
-                    Separate each identity pillar with a comma
-                  </p>
-                </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, leavingBehind: [...formData.leavingBehind, ""] })}
+                  className="text-stone-400 hover:text-stone-600 text-sm transition-colors"
+                >
+                  + Add another
+                </button>
+              </div>
+            </section>
+
+            {/* Constraints & Filters */}
+            <section className="border-t border-stone-200 pt-10">
+              <p className="text-stone-400 text-xs tracking-[0.15em] uppercase mb-6">
+                Guardrails
+              </p>
+
+              <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-1">
-                    Primary constraint
+                  <label className="block text-stone-500 text-sm mb-2">
+                    Primary Constraint
                   </label>
                   <input
                     value={formData.primaryConstraint}
                     onChange={(e) => setFormData({ ...formData, primaryConstraint: e.target.value })}
-                    placeholder="What you're protecting"
-                    className="w-full px-4 py-3 rounded-xl border border-border bg-white text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent"
+                    placeholder="What you're protecting..."
+                    className="w-full px-5 py-4 rounded-2xl border border-stone-200 bg-white text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-300"
                   />
                 </div>
+
                 <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-1">
-                    Decision filter
+                  <label className="block text-stone-500 text-sm mb-2">
+                    Decision Filter
                   </label>
                   <input
                     value={formData.decisionFilter}
                     onChange={(e) => setFormData({ ...formData, decisionFilter: e.target.value })}
-                    placeholder="Your rule for saying yes"
-                    className="w-full px-4 py-3 rounded-xl border border-border bg-white text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent"
+                    placeholder="Your rule for saying yes..."
+                    className="w-full px-5 py-4 rounded-2xl border border-stone-200 bg-white text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-300"
                   />
                 </div>
+
                 <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-1">
-                    Anti-patterns (comma-separated)
+                  <label className="block text-stone-500 text-sm mb-2">
+                    Anti-patterns
                   </label>
                   <input
                     value={formData.antiPatterns}
                     onChange={(e) => setFormData({ ...formData, antiPatterns: e.target.value })}
-                    placeholder="Behaviors to avoid"
-                    className="w-full px-4 py-3 rounded-xl border border-border bg-white text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-1">
-                    Current phase
-                  </label>
-                  <input
-                    value={formData.currentPhase}
-                    onChange={(e) => setFormData({ ...formData, currentPhase: e.target.value })}
-                    placeholder="Where you are in your journey"
-                    className="w-full px-4 py-3 rounded-xl border border-border bg-white text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent"
+                    placeholder="Behaviors to avoid (comma-separated)..."
+                    className="w-full px-5 py-4 rounded-2xl border border-stone-200 bg-white text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-300"
                   />
                 </div>
               </div>
-            </Card>
+            </section>
 
-            {/* Vision Section */}
-            <Card>
-              <h2 className="text-lg font-semibold text-text-primary mb-4">
-                Vision for the Future
-              </h2>
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-1">
-                    What are you creating?
-                  </label>
-                  <textarea
-                    value={formData.futureVision}
-                    onChange={(e) => setFormData({ ...formData, futureVision: e.target.value })}
-                    placeholder="Describe your future as if it's already happening..."
-                    rows={4}
-                    className="w-full px-4 py-3 rounded-xl border border-border bg-white text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent resize-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-2">
-                    What are you leaving behind?
-                  </label>
-                  <div className="space-y-2">
-                    {formData.leavingBehind.map((item, index) => (
-                      <input
-                        key={index}
-                        value={item}
-                        onChange={(e) => updateLeavingBehind(index, e.target.value)}
-                        placeholder="Old pattern or identity..."
-                        className="w-full px-4 py-3 rounded-xl border border-border bg-white text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent"
-                      />
-                    ))}
-                    <button
-                      type="button"
-                      onClick={addLeavingBehind}
-                      className="text-text-secondary hover:text-text-primary text-sm"
-                    >
-                      + Add another
-                    </button>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-2">
-                    Elevated emotions to cultivate
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {availableEmotions.map((emotion) => {
-                      const isSelected = formData.elevatedEmotions.includes(emotion);
-                      return (
-                        <button
-                          key={emotion}
-                          type="button"
-                          onClick={() => toggleEmotion(emotion)}
-                          className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                            isSelected
-                              ? "bg-accent text-white"
-                              : "bg-bg-secondary text-text-secondary hover:bg-bg-tertiary"
-                          }`}
-                        >
-                          {emotion}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            </Card>
-
-            {/* Save/Cancel buttons */}
-            <div className="flex gap-3">
-              <Button onClick={handleSave} disabled={saving || !formData.coreIdentity.trim()}>
+            {/* Actions */}
+            <div className="flex gap-3 pt-4">
+              <button
+                onClick={handleSave}
+                disabled={saving || !formData.coreIdentity.trim()}
+                className="px-8 py-3 bg-stone-900 text-white text-sm tracking-wide rounded-full hover:bg-stone-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
                 {saving ? "Saving..." : "Save Changes"}
-              </Button>
-              <Button variant="ghost" onClick={() => setIsEditing(false)} disabled={saving}>
+              </button>
+              <button
+                onClick={() => {
+                  setEditingSection(null);
+                  // Reset form to current identity
+                  if (identity) {
+                    setFormData({
+                      coreIdentity: identity.coreIdentity || "",
+                      primaryConstraint: identity.primaryConstraint || "",
+                      decisionFilter: identity.decisionFilter || "",
+                      antiPatterns: identity.antiPatterns?.join(", ") || "",
+                      currentPhase: identity.currentPhase || "",
+                      futureVision: identity.futureVision || "",
+                      leavingBehind: identity.leavingBehind?.length
+                        ? [...identity.leavingBehind, "", ""].slice(0, Math.max(3, identity.leavingBehind.length))
+                        : ["", "", ""],
+                      elevatedEmotions: identity.elevatedEmotions || [],
+                    });
+                  }
+                }}
+                disabled={saving}
+                className="px-8 py-3 text-stone-500 text-sm hover:text-stone-700 transition-colors"
+              >
                 Cancel
-              </Button>
+              </button>
             </div>
           </div>
-        ) : !showVoiceInput && (
+        ) : (
           /* View Mode */
-          <div className="space-y-6">
-            {/* Identity Pillars Visual Grid */}
-            <Card>
-              <h2 className="text-lg font-semibold text-text-primary mb-4">
-                Who I&apos;m Becoming
-              </h2>
+          <div className="space-y-12">
+
+            {/* Identity Pillars */}
+            <section>
+              <p className="text-stone-400 text-xs tracking-[0.15em] uppercase mb-6">
+                Identity Pillars
+              </p>
               {identityPillars.length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div className="flex flex-wrap gap-3">
                   {identityPillars.map((pillar, index) => (
-                    <div
+                    <span
                       key={index}
-                      className="p-4 bg-gradient-to-br from-accent/5 to-accent/10 border border-accent/20 rounded-xl text-center space-y-2"
+                      className="px-5 py-2.5 bg-stone-100 text-stone-800 rounded-full text-sm font-medium"
                     >
-                      <span className="text-2xl">{getPillarIcon(pillar)}</span>
-                      <p className="text-text-primary font-medium text-sm">
-                        {pillar}
-                      </p>
-                    </div>
+                      {pillar}
+                    </span>
                   ))}
                 </div>
               ) : (
-                <p className="text-text-secondary">No identity pillars defined yet.</p>
+                <p className="text-stone-400">Not defined yet</p>
               )}
-            </Card>
+            </section>
 
-            {/* Identity Details */}
-            <Card>
-              <h2 className="text-lg font-semibold text-text-primary mb-4">
-                Identity Details
-              </h2>
-              <div className="space-y-4">
-                {identity?.primaryConstraint && (
-                  <div>
-                    <p className="text-sm text-text-muted">Protecting</p>
-                    <p className="text-text-primary">{identity.primaryConstraint}</p>
-                  </div>
-                )}
-                {identity?.decisionFilter && (
-                  <div>
-                    <p className="text-sm text-text-muted">Decision filter</p>
-                    <p className="text-text-primary">{identity.decisionFilter}</p>
-                  </div>
-                )}
-                {identity?.antiPatterns && identity.antiPatterns.length > 0 && (
-                  <div>
-                    <p className="text-sm text-text-muted">Anti-patterns</p>
-                    <div className="flex flex-wrap gap-2 mt-1">
-                      {identity.antiPatterns.map((pattern, i) => (
-                        <span key={i} className="px-3 py-1 bg-red-50 text-red-700 rounded-full text-sm">
-                          {pattern}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {identity?.currentPhase && (
-                  <div>
-                    <p className="text-sm text-text-muted">Current phase</p>
-                    <p className="text-text-primary">{identity.currentPhase}</p>
-                  </div>
-                )}
-              </div>
-            </Card>
+            {/* Current Phase */}
+            {identity?.currentPhase && (
+              <section>
+                <p className="text-stone-400 text-xs tracking-[0.15em] uppercase mb-3">
+                  Current Phase
+                </p>
+                <p className="text-stone-800 text-lg">{identity.currentPhase}</p>
+              </section>
+            )}
 
-            {/* Vision Card */}
-            {(identity?.futureVision || identity?.leavingBehind?.length || identity?.elevatedEmotions?.length) && (
-              <Card>
-                <h2 className="text-lg font-semibold text-text-primary mb-4">
-                  Vision for the Future
-                </h2>
-                <div className="space-y-4">
-                  {identity?.futureVision && (
+            {/* Vision */}
+            {identity?.futureVision && (
+              <section className="border-t border-stone-200 pt-10">
+                <p className="text-stone-400 text-xs tracking-[0.15em] uppercase mb-4">
+                  Your Vision
+                </p>
+                <p className="text-stone-700 text-lg leading-relaxed whitespace-pre-wrap">
+                  {identity.futureVision}
+                </p>
+              </section>
+            )}
+
+            {/* Elevated Emotions */}
+            {identity?.elevatedEmotions && identity.elevatedEmotions.length > 0 && (
+              <section>
+                <p className="text-stone-400 text-xs tracking-[0.15em] uppercase mb-4">
+                  Cultivating
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {identity.elevatedEmotions.map((emotion, i) => (
+                    <span
+                      key={i}
+                      className="px-4 py-2 bg-emerald-50 text-emerald-700 rounded-full text-sm"
+                    >
+                      {emotion}
+                    </span>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Leaving Behind */}
+            {identity?.leavingBehind && identity.leavingBehind.length > 0 && (
+              <section>
+                <p className="text-stone-400 text-xs tracking-[0.15em] uppercase mb-4">
+                  Leaving Behind
+                </p>
+                <ul className="space-y-2">
+                  {identity.leavingBehind.map((item, i) => (
+                    <li key={i} className="text-stone-500 flex items-start gap-3">
+                      <span className="text-stone-300">—</span>
+                      <span className="line-through decoration-stone-300">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            {/* Guardrails */}
+            {(identity?.primaryConstraint || identity?.decisionFilter || identity?.antiPatterns?.length) && (
+              <section className="border-t border-stone-200 pt-10">
+                <p className="text-stone-400 text-xs tracking-[0.15em] uppercase mb-6">
+                  Guardrails
+                </p>
+                <div className="space-y-6">
+                  {identity.primaryConstraint && (
                     <div>
-                      <p className="text-sm text-text-muted">What I&apos;m creating</p>
-                      <p className="text-text-primary whitespace-pre-wrap">{identity.futureVision}</p>
+                      <p className="text-stone-400 text-sm mb-1">Protecting</p>
+                      <p className="text-stone-800">{identity.primaryConstraint}</p>
                     </div>
                   )}
-                  {identity?.leavingBehind && identity.leavingBehind.length > 0 && (
+                  {identity.decisionFilter && (
                     <div>
-                      <p className="text-sm text-text-muted">Leaving behind</p>
-                      <ul className="mt-1 space-y-1">
-                        {identity.leavingBehind.map((item, i) => (
-                          <li key={i} className="text-text-primary flex items-start gap-2">
-                            <span className="text-text-muted">—</span>
-                            {item}
-                          </li>
-                        ))}
-                      </ul>
+                      <p className="text-stone-400 text-sm mb-1">Decision Filter</p>
+                      <p className="text-stone-800">{identity.decisionFilter}</p>
                     </div>
                   )}
-                  {identity?.elevatedEmotions && identity.elevatedEmotions.length > 0 && (
+                  {identity.antiPatterns && identity.antiPatterns.length > 0 && (
                     <div>
-                      <p className="text-sm text-text-muted">Elevated emotions</p>
-                      <div className="flex flex-wrap gap-2 mt-1">
-                        {identity.elevatedEmotions.map((emotion, i) => (
-                          <span key={i} className="px-3 py-1 bg-accent/10 text-accent rounded-full text-sm font-medium">
-                            {emotion}
+                      <p className="text-stone-400 text-sm mb-2">Anti-patterns</p>
+                      <div className="flex flex-wrap gap-2">
+                        {identity.antiPatterns.map((pattern, i) => (
+                          <span key={i} className="px-3 py-1.5 bg-red-50 text-red-600 rounded-full text-sm">
+                            {pattern}
                           </span>
                         ))}
                       </div>
                     </div>
                   )}
                 </div>
-              </Card>
+              </section>
             )}
+
           </div>
         )}
       </div>
     </div>
   );
 }
-
-

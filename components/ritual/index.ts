@@ -12,3 +12,4 @@ export { PostMeditationDump } from "./PostMeditationDump";
 export { ExtractionReview } from "./ExtractionReview";
 export { EmbodimentGuidance } from "./EmbodimentGuidance";
 export { ActionOptIn } from "./ActionOptIn";
+export { RitualPreparation } from "./RitualPreparation";
