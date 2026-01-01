@@ -35,16 +35,16 @@ export default function LandingPage() {
       <section className="pt-32 pb-20 px-6 lg:pt-40 lg:pb-32">
         <div className="max-w-4xl mx-auto text-center">
           <p className="text-text-muted text-sm uppercase tracking-widest mb-6">
-            For the conscious founder
+            Meditation-first transformation
           </p>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-semibold text-text-primary leading-tight tracking-tight">
-            Stop managing tasks.
+            Become first.
             <br />
-            <span className="text-text-secondary">Start following your clarity.</span>
+            <span className="text-text-secondary">Then do.</span>
           </h1>
           <p className="mt-8 text-lg lg:text-xl text-text-secondary max-w-2xl mx-auto leading-relaxed">
-            True North is the anti-productivity tool that replaces endless lists with a single daily practice.
-            Check in with your state. Receive one piece of guidance. Act with alignment.
+            True North is a post-meditation integration tool that helps you embody your future self
+            before taking action. Feel the outcome first. Let clarity emerge from coherence.
           </p>
           <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
@@ -70,20 +70,20 @@ export default function LandingPage() {
       <section className="py-12 px-6 border-y border-border/50">
         <div className="max-w-4xl mx-auto">
           <p className="text-center text-sm text-text-muted mb-8">
-            Trusted by founders who understand that clarity precedes action
+            For founders who understand that being precedes doing
           </p>
           <div className="grid grid-cols-3 gap-8 text-center">
             <div>
-              <p className="text-3xl font-semibold text-text-primary">94%</p>
-              <p className="text-sm text-text-muted mt-1">Report reduced anxiety</p>
-            </div>
-            <div>
-              <p className="text-3xl font-semibold text-text-primary">3 min</p>
-              <p className="text-sm text-text-muted mt-1">Average daily practice</p>
+              <p className="text-3xl font-semibold text-text-primary">10 min</p>
+              <p className="text-sm text-text-muted mt-1">Morning practice</p>
             </div>
             <div>
               <p className="text-3xl font-semibold text-text-primary">1</p>
-              <p className="text-sm text-text-muted mt-1">Focus per day</p>
+              <p className="text-sm text-text-muted mt-1">Embodiment per day</p>
+            </div>
+            <div>
+              <p className="text-3xl font-semibold text-text-primary">Coherence</p>
+              <p className="text-sm text-text-muted mt-1">Before action</p>
             </div>
           </div>
         </div>
@@ -97,17 +97,16 @@ export default function LandingPage() {
               The problem
             </p>
             <h2 className="text-3xl lg:text-4xl font-semibold text-text-primary leading-tight">
-              Your mind is drowning in open loops
+              You meditate. Then you react.
             </h2>
             <p className="mt-6 text-lg text-text-secondary leading-relaxed">
-              Every unfinished thought, every pending decision, every &quot;I should probably...&quot;
-              creates cognitive tension. Traditional productivity tools add more loops.
-              More lists. More guilt.
+              You sit in stillness. You feel expanded. Connected. Clear.
+              Then you open your laptop and the old self takes over.
+              The anxious one. The reactive one. The one addicted to doing.
             </p>
             <p className="mt-4 text-lg text-text-secondary leading-relaxed">
-              You&apos;ve done the inner work. You know that your best decisions come from a
-              centered state, not a frantic one. Yet your tools keep pulling you back
-              into reactivity.
+              The gap between who you are in meditation and who you are in action
+              is where transformation dies. Your practice ends when it should begin.
             </p>
           </div>
         </div>
@@ -121,16 +120,16 @@ export default function LandingPage() {
               The practice
             </p>
             <h2 className="text-3xl lg:text-4xl font-semibold text-text-primary leading-tight">
-              One ritual. One guidance. One action.
+              Embody your future. Then act from it.
             </h2>
             <p className="mt-6 text-lg text-text-secondary leading-relaxed">
-              True North replaces the chaos with a simple morning practice. Check in with
-              your mental, emotional, and physical state. An AI that understands conscious
-              decision-making evaluates what you can truly handle today.
+              True North bridges meditation and action. After coherence breathing,
+              you capture what emerged. AI extracts the insights. Then you receive
+              one embodiment directive: feel the emotion of your future as already present.
             </p>
             <p className="mt-4 text-lg text-text-secondary leading-relaxed">
-              Then you receive exactly one piece of guidance: your next action,
-              a loop to close, or permission to pause.
+              Only then—from that state—do you ask for action guidance.
+              Or realize that embodiment was enough.
             </p>
           </div>
         </div>
@@ -144,7 +143,7 @@ export default function LandingPage() {
               How it works
             </p>
             <h2 className="text-3xl lg:text-4xl font-semibold text-text-primary">
-              Three minutes to clarity
+              The morning transformation practice
             </h2>
           </div>
 
@@ -156,12 +155,12 @@ export default function LandingPage() {
               </div>
               <div className="flex-1">
                 <h3 className="text-xl font-semibold text-text-primary mb-3">
-                  State Check-In
+                  Coherence Breathing
                 </h3>
                 <p className="text-text-secondary leading-relaxed">
-                  Each morning, you answer three simple questions about your mental clarity,
-                  emotional state, and physical energy. No judgment. Just honest awareness
-                  of where you are right now.
+                  Begin with heart-brain coherence. 5 seconds in, 5 seconds out.
+                  Text overlays guide you: &quot;Becoming no body, no one, no thing, no where, no time.&quot;
+                  Optional future-self visualization draws from who you&apos;re becoming.
                 </p>
               </div>
             </div>
@@ -173,12 +172,12 @@ export default function LandingPage() {
               </div>
               <div className="flex-1">
                 <h3 className="text-xl font-semibold text-text-primary mb-3">
-                  Elevation Practice (Optional)
+                  Post-Meditation Capture
                 </h3>
                 <p className="text-text-secondary leading-relaxed">
-                  If your state is compromised, True North offers a brief centering exercise.
-                  A breathing pattern. A moment of stillness. Something to shift your energy
-                  before making any decisions.
+                  From that elevated state, speak or type what emerged.
+                  What wants to be created? What patterns are ready to release?
+                  AI extracts open loops, vision updates, and identity insights.
                 </p>
               </div>
             </div>
@@ -190,12 +189,29 @@ export default function LandingPage() {
               </div>
               <div className="flex-1">
                 <h3 className="text-xl font-semibold text-text-primary mb-3">
-                  Receive Guidance
+                  Embodiment Practice
                 </h3>
                 <p className="text-text-secondary leading-relaxed">
-                  Based on your state, your open loops, and what actually matters, you receive
-                  exactly one piece of guidance. Not a list. Not options. One clear direction:
-                  your next action, a loop to close, or permission to pause.
+                  Receive one embodiment directive: &quot;Spend 15 minutes feeling the
+                  gratitude of already having closed the Series A.&quot; Feel it in your body.
+                  The future becomes present. The nervous system learns safety.
+                </p>
+              </div>
+            </div>
+
+            {/* Step 4 */}
+            <div className="flex flex-col lg:flex-row gap-8 items-start">
+              <div className="flex-shrink-0 w-16 h-16 rounded-2xl bg-bg-secondary flex items-center justify-center">
+                <span className="text-2xl font-semibold text-text-muted">4</span>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xl font-semibold text-text-primary mb-3">
+                  Action Emerges (Optional)
+                </h3>
+                <p className="text-text-secondary leading-relaxed">
+                  After embodiment, choose: Get action guidance, or declare yourself complete.
+                  Sometimes the inner work was enough. Other days, the right action
+                  flows naturally from the state you&apos;ve cultivated.
                 </p>
               </div>
             </div>
@@ -211,10 +227,10 @@ export default function LandingPage() {
               Philosophy
             </p>
             <h2 className="text-3xl lg:text-4xl font-semibold">
-              You never choose what to do
+              The body follows the mind&apos;s command
             </h2>
             <p className="mt-6 text-lg text-bg-primary/80 max-w-2xl mx-auto leading-relaxed">
-              The system chooses what matters. You only consent or execute.
+              Inspired by the science of transformation. Feel it first. Become it first. Then act.
             </p>
           </div>
 
@@ -222,121 +238,162 @@ export default function LandingPage() {
             <div className="text-center">
               <div className="w-12 h-12 rounded-full bg-bg-primary/10 flex items-center justify-center mx-auto mb-4">
                 <svg className="w-6 h-6 text-bg-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
                 </svg>
               </div>
-              <h3 className="font-semibold mb-2">No Prioritization</h3>
+              <h3 className="font-semibold mb-2">Heart-Brain Coherence</h3>
               <p className="text-sm text-bg-primary/70">
-                You may add open loops, but you never sort, rank, or pick from lists.
+                Synchronize your heart and brain before making any decisions.
               </p>
             </div>
 
             <div className="text-center">
               <div className="w-12 h-12 rounded-full bg-bg-primary/10 flex items-center justify-center mx-auto mb-4">
                 <svg className="w-6 h-6 text-bg-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 9.563C9 9.252 9.252 9 9.563 9h4.874c.311 0 .563.252.563.563v4.874c0 .311-.252.563-.563.563H9.564A.562.562 0 019 14.437V9.564z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z" />
                 </svg>
               </div>
-              <h3 className="font-semibold mb-2">Loops, Not Tasks</h3>
+              <h3 className="font-semibold mb-2">Elevated Emotions</h3>
               <p className="text-sm text-bg-primary/70">
-                Open loops are cognitive tension, not units of work to be managed.
+                Gratitude, love, freedom, joy—feel them as the future, not the reward.
               </p>
             </div>
 
             <div className="text-center">
               <div className="w-12 h-12 rounded-full bg-bg-primary/10 flex items-center justify-center mx-auto mb-4">
                 <svg className="w-6 h-6 text-bg-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                 </svg>
               </div>
-              <h3 className="font-semibold mb-2">State Before Action</h3>
+              <h3 className="font-semibold mb-2">Release the Old Self</h3>
               <p className="text-sm text-bg-primary/70">
-                All execution flows through the daily ritual. Clarity precedes action.
+                Track the patterns you&apos;re leaving behind. The known must be released for the unknown.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Testimonials */}
+      {/* The Quantum Field Quote */}
       <section className="py-20 lg:py-32 px-6">
+        <div className="max-w-3xl mx-auto text-center">
+          <blockquote className="text-2xl lg:text-3xl font-light text-text-primary leading-relaxed italic">
+            &quot;The best way to predict your future is to create it—not from the known, but from the unknown.&quot;
+          </blockquote>
+          <p className="mt-6 text-text-muted text-sm uppercase tracking-widest">
+            The philosophy behind True North
+          </p>
+        </div>
+      </section>
+
+      {/* Features Grid */}
+      <section className="py-20 lg:py-32 px-6 bg-bg-secondary">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
             <p className="text-text-muted text-sm uppercase tracking-widest mb-4">
-              From practitioners
+              What you get
             </p>
             <h2 className="text-3xl lg:text-4xl font-semibold text-text-primary">
-              A different kind of clarity
+              A complete transformation practice
             </h2>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
             <div className="bg-white rounded-2xl border border-border p-8">
-              <p className="text-text-secondary leading-relaxed mb-6">
-                &quot;I&apos;ve tried every productivity system. True North is the first tool that
-                understands that my capacity changes day to day. Some days I get a
-                challenging action. Some days I get permission to rest. Both feel right.&quot;
-              </p>
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-bg-secondary"></div>
-                <div>
-                  <p className="font-medium text-text-primary text-sm">Sarah M.</p>
-                  <p className="text-text-muted text-sm">Founder, Wellness Tech</p>
-                </div>
+              <div className="w-10 h-10 rounded-xl bg-bg-secondary flex items-center justify-center mb-4">
+                <svg className="w-5 h-5 text-text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
               </div>
+              <h3 className="text-lg font-semibold text-text-primary mb-2">
+                Coherence Timer
+              </h3>
+              <p className="text-text-secondary text-sm leading-relaxed">
+                Guided breathing with expanding/contracting visual cues.
+                Dispenza-style text overlays. Future HRV integration ready.
+              </p>
             </div>
 
             <div className="bg-white rounded-2xl border border-border p-8">
-              <p className="text-text-secondary leading-relaxed mb-6">
-                &quot;The morning ritual takes 3 minutes but changes my entire day.
-                Instead of waking up anxious about my list, I wake up curious
-                about what today&apos;s guidance will be.&quot;
-              </p>
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-bg-secondary"></div>
-                <div>
-                  <p className="font-medium text-text-primary text-sm">David K.</p>
-                  <p className="text-text-muted text-sm">Conscious Entrepreneur</p>
-                </div>
+              <div className="w-10 h-10 rounded-xl bg-bg-secondary flex items-center justify-center mb-4">
+                <svg className="w-5 h-5 text-text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
+                </svg>
               </div>
+              <h3 className="text-lg font-semibold text-text-primary mb-2">
+                Voice Capture
+              </h3>
+              <p className="text-text-secondary text-sm leading-relaxed">
+                Speak your insights from the elevated state.
+                Voice often captures what the thinking mind misses.
+              </p>
             </div>
 
             <div className="bg-white rounded-2xl border border-border p-8">
-              <p className="text-text-secondary leading-relaxed mb-6">
-                &quot;Finally, a tool that respects my inner work. True North doesn&apos;t
-                try to optimize me. It trusts that I know what alignment feels like—it
-                just helps me stay there.&quot;
-              </p>
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-bg-secondary"></div>
-                <div>
-                  <p className="font-medium text-text-primary text-sm">Michael R.</p>
-                  <p className="text-text-muted text-sm">Coach & Facilitator</p>
-                </div>
+              <div className="w-10 h-10 rounded-xl bg-bg-secondary flex items-center justify-center mb-4">
+                <svg className="w-5 h-5 text-text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+                </svg>
               </div>
+              <h3 className="text-lg font-semibold text-text-primary mb-2">
+                AI Extraction
+              </h3>
+              <p className="text-text-secondary text-sm leading-relaxed">
+                Claude extracts open loops, vision updates, identity insights,
+                and patterns ready to release from your brain dump.
+              </p>
             </div>
 
             <div className="bg-white rounded-2xl border border-border p-8">
-              <p className="text-text-secondary leading-relaxed mb-6">
-                &quot;I used to feel guilty about not completing my to-do list.
-                Now I feel clear about completing my one thing. The shift
-                from productivity to presence has been profound.&quot;
-              </p>
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-bg-secondary"></div>
-                <div>
-                  <p className="font-medium text-text-primary text-sm">Jennifer L.</p>
-                  <p className="text-text-muted text-sm">Meditation Teacher</p>
-                </div>
+              <div className="w-10 h-10 rounded-xl bg-bg-secondary flex items-center justify-center mb-4">
+                <svg className="w-5 h-5 text-text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                </svg>
               </div>
+              <h3 className="text-lg font-semibold text-text-primary mb-2">
+                Embodiment Guidance
+              </h3>
+              <p className="text-text-secondary text-sm leading-relaxed">
+                One directive: connect an elevated emotion with a concrete outcome.
+                Feel it as already happening. 10-20 minutes of becoming.
+              </p>
+            </div>
+
+            <div className="bg-white rounded-2xl border border-border p-8">
+              <div className="w-10 h-10 rounded-xl bg-bg-secondary flex items-center justify-center mb-4">
+                <svg className="w-5 h-5 text-text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-text-primary mb-2">
+                Identity Evolution
+              </h3>
+              <p className="text-text-secondary text-sm leading-relaxed">
+                Track who you&apos;re becoming, what you&apos;re releasing, and the elevated
+                emotions you&apos;re cultivating. Your transformation made visible.
+              </p>
+            </div>
+
+            <div className="bg-white rounded-2xl border border-border p-8">
+              <div className="w-10 h-10 rounded-xl bg-bg-secondary flex items-center justify-center mb-4">
+                <svg className="w-5 h-5 text-text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-text-primary mb-2">
+                Optional Action
+              </h3>
+              <p className="text-text-secondary text-sm leading-relaxed">
+                After embodiment, choose action guidance or completeness.
+                Sometimes the inner work was enough. That&apos;s honored here.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
       {/* Who This Is For */}
-      <section className="py-20 lg:py-32 px-6 bg-bg-secondary">
+      <section className="py-20 lg:py-32 px-6">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
             <p className="text-text-muted text-sm uppercase tracking-widest mb-4">
@@ -355,7 +412,7 @@ export default function LandingPage() {
                 </svg>
               </div>
               <p className="text-text-secondary">
-                Have a regular meditation or inner work practice
+                Have a meditation practice but struggle to carry it into their day
               </p>
             </div>
 
@@ -366,7 +423,7 @@ export default function LandingPage() {
                 </svg>
               </div>
               <p className="text-text-secondary">
-                Know that their best decisions come from a centered state
+                Believe in transformation through elevated emotion, not willpower
               </p>
             </div>
 
@@ -377,7 +434,7 @@ export default function LandingPage() {
                 </svg>
               </div>
               <p className="text-text-secondary">
-                Are tired of productivity tools that create more anxiety
+                Want to become the person first, then do the things
               </p>
             </div>
 
@@ -388,7 +445,7 @@ export default function LandingPage() {
                 </svg>
               </div>
               <p className="text-text-secondary">
-                Want permission to pause when pause is what&apos;s needed
+                Are ready to release old patterns and step into the unknown
               </p>
             </div>
 
@@ -399,7 +456,7 @@ export default function LandingPage() {
                 </svg>
               </div>
               <p className="text-text-secondary">
-                Value alignment over achievement
+                Understand that sometimes embodiment is enough—action can wait
               </p>
             </div>
 
@@ -410,7 +467,7 @@ export default function LandingPage() {
                 </svg>
               </div>
               <p className="text-text-secondary">
-                Trust that less doing can mean more becoming
+                Trust that the quantum field responds to who you&apos;re being, not what you&apos;re doing
               </p>
             </div>
           </div>
@@ -418,13 +475,14 @@ export default function LandingPage() {
       </section>
 
       {/* Final CTA */}
-      <section className="py-20 lg:py-32 px-6">
+      <section className="py-20 lg:py-32 px-6 bg-bg-secondary">
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="text-3xl lg:text-4xl font-semibold text-text-primary leading-tight">
-            Your next action awaits
+            Your future self is waiting
           </h2>
           <p className="mt-6 text-lg text-text-secondary leading-relaxed">
-            Stop managing. Start aligning. Begin your practice today.
+            Not to be chased. To be embodied. To be felt now.
+            Begin the practice that bridges meditation and manifestation.
           </p>
           <Link
             href="/signup"
@@ -451,7 +509,7 @@ export default function LandingPage() {
               <span className="text-sm font-medium text-text-primary">True North</span>
             </div>
             <p className="text-sm text-text-muted">
-              Clarity over productivity.
+              Become first. Then do.
             </p>
             <div className="flex items-center gap-6">
               <Link href="/login" className="text-sm text-text-muted hover:text-text-primary transition-colors">
