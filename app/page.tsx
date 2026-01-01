@@ -35,16 +35,16 @@ export default function LandingPage() {
       <section className="pt-32 pb-20 px-6 lg:pt-40 lg:pb-32">
         <div className="max-w-4xl mx-auto text-center">
           <p className="text-text-muted text-sm uppercase tracking-widest mb-6">
-            Meditation-first transformation
+            For the conscious founder
           </p>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-semibold text-text-primary leading-tight tracking-tight">
-            Become first.
+            Stop managing tasks.
             <br />
-            <span className="text-text-secondary">Then do.</span>
+            <span className="text-text-secondary">Start following your clarity.</span>
           </h1>
           <p className="mt-8 text-lg lg:text-xl text-text-secondary max-w-2xl mx-auto leading-relaxed">
-            True North is a post-meditation integration tool that helps you embody your future self
-            before taking action. Feel the outcome first. Let clarity emerge from coherence.
+            True North is the anti-productivity tool that replaces endless lists with a single daily practice.
+            Check in with your state. Receive one piece of guidance. Act with alignment.
           </p>
           <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
