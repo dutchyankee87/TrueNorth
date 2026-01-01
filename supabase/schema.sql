@@ -180,6 +180,78 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+-- 11. Meditation Sessions (Joe Dispenza coherence practice)
+CREATE TABLE public.meditation_sessions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+
+  -- Pre-meditation
+  did_future_self_viz BOOLEAN DEFAULT FALSE,
+
+  -- Coherence breathing
+  coherence_duration_seconds INTEGER NOT NULL,
+  breath_pattern TEXT DEFAULT '5-5', -- inhale-exhale seconds (e.g., "5-5", "4-6")
+
+  -- Post-meditation state (self-reported)
+  post_meditation_state TEXT CHECK (post_meditation_state IN ('expanded', 'calm', 'neutral', 'distracted')),
+
+  -- Reserved for HeartMath/HRV integration
+  hrv_data JSONB,
+  coherence_score DECIMAL(3,2),
+
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  completed_at TIMESTAMP WITH TIME ZONE
+);
+
+-- 12. Embodiment Events (EMBODY guidance type)
+CREATE TABLE public.embodiment_events (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+  meditation_session_id UUID REFERENCES public.meditation_sessions(id) ON DELETE CASCADE,
+
+  -- The embodiment guidance
+  embodiment_text TEXT NOT NULL,
+  target_emotion TEXT,
+  target_duration_seconds INTEGER DEFAULT 900, -- 15 minutes default
+
+  -- Outcome
+  completed BOOLEAN DEFAULT FALSE,
+  skipped BOOLEAN DEFAULT FALSE,
+  actual_duration_seconds INTEGER,
+  felt_shift TEXT CHECK (felt_shift IN ('deep', 'moderate', 'slight', 'none')),
+
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Add meditation session reference to daily_states
+ALTER TABLE public.daily_states
+  ADD COLUMN IF NOT EXISTS meditation_session_id UUID REFERENCES public.meditation_sessions(id) ON DELETE SET NULL,
+  ADD COLUMN IF NOT EXISTS post_meditation_dump TEXT;
+
+-- Update guidance_events to support 'embody' type
+ALTER TABLE public.guidance_events
+  DROP CONSTRAINT IF EXISTS guidance_events_guidance_type_check;
+
+ALTER TABLE public.guidance_events
+  ADD CONSTRAINT guidance_events_guidance_type_check
+  CHECK (guidance_type IN ('next_action', 'pause', 'close_loop', 'embody'));
+
+-- Add meditation session reference to guidance_events
+ALTER TABLE public.guidance_events
+  ADD COLUMN IF NOT EXISTS meditation_session_id UUID REFERENCES public.meditation_sessions(id) ON DELETE SET NULL,
+  ADD COLUMN IF NOT EXISTS embodiment_event_id UUID REFERENCES public.embodiment_events(id) ON DELETE SET NULL;
+
+-- Indexes for new tables
+CREATE INDEX idx_meditation_sessions_user ON public.meditation_sessions(user_id, created_at);
+CREATE INDEX idx_embodiment_events_user ON public.embodiment_events(user_id, created_at);
+
+-- RLS for new tables
+ALTER TABLE public.meditation_sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.embodiment_events ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can manage own meditation sessions" ON public.meditation_sessions FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users can manage own embodiment events" ON public.embodiment_events FOR ALL USING (auth.uid() = user_id);
+
 -- Trigger to create profile on user signup
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$

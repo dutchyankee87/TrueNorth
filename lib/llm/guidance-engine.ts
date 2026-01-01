@@ -14,6 +14,7 @@ export interface GuidanceInput {
   effectiveState: StateGateInput & { postPracticeShift?: string | null };
   openLoops: OpenLoop[];
   contextDump: string | null;
+  postEmbodimentContext?: string | null; // Context from completed embodiment practice
 }
 
 export interface GuidanceResult {
@@ -94,7 +95,8 @@ export async function generateGuidance(input: GuidanceInput): Promise<GuidanceRe
     .replace("{personalized_rules}", formatPersonalizedRules(input.personalizedRules))
     .replace("{effective_state}", formatEffectiveState(input.effectiveState))
     .replace("{open_loops}", formatOpenLoops(input.openLoops))
-    .replace("{context_dump}", input.contextDump || "No additional context provided.");
+    .replace("{context_dump}", input.contextDump || "No additional context provided.")
+    .replace("{post_embodiment_context}", input.postEmbodimentContext || "N/A - no embodiment practice completed.");
 
   const message = await anthropic.messages.create({
     model: "claude-sonnet-4-20250514",
@@ -123,6 +125,7 @@ export async function generateGuidance(input: GuidanceInput): Promise<GuidanceRe
       NEXT_ACTION: "next_action",
       PAUSE: "pause",
       CLOSE_LOOP: "close_loop",
+      EMBODY: "embody",
     };
 
     return {

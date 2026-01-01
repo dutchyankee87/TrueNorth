@@ -151,3 +151,46 @@ export const personalizedRules = pgTable("personalized_rules", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
+
+// Meditation Sessions (Joe Dispenza coherence practice)
+export const meditationSessions = pgTable("meditation_sessions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").references(() => profiles.id, { onDelete: "cascade" }),
+
+  // Pre-meditation
+  didFutureSelfViz: boolean("did_future_self_viz").default(false),
+
+  // Coherence breathing
+  coherenceDurationSeconds: integer("coherence_duration_seconds").notNull(),
+  breathPattern: text("breath_pattern").default("5-5"), // inhale-exhale seconds
+
+  // Post-meditation state (self-reported)
+  postMeditationState: text("post_meditation_state"), // expanded, calm, neutral, distracted
+
+  // Reserved for HeartMath/HRV integration
+  hrvData: jsonb("hrv_data"),
+  coherenceScore: decimal("coherence_score", { precision: 3, scale: 2 }),
+
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  completedAt: timestamp("completed_at", { withTimezone: true }),
+});
+
+// Embodiment Events (EMBODY guidance type)
+export const embodimentEvents = pgTable("embodiment_events", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").references(() => profiles.id, { onDelete: "cascade" }),
+  meditationSessionId: uuid("meditation_session_id").references(() => meditationSessions.id, { onDelete: "cascade" }),
+
+  // The embodiment guidance
+  embodimentText: text("embodiment_text").notNull(),
+  targetEmotion: text("target_emotion"),
+  targetDurationSeconds: integer("target_duration_seconds").default(900), // 15 minutes default
+
+  // Outcome
+  completed: boolean("completed").default(false),
+  skipped: boolean("skipped").default(false),
+  actualDurationSeconds: integer("actual_duration_seconds"),
+  feltShift: text("felt_shift"), // deep, moderate, slight, none
+
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+});

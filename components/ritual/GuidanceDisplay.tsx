@@ -16,6 +16,7 @@ const typeLabels: Record<GuidanceType, string> = {
   next_action: "Next Action",
   pause: "Pause",
   close_loop: "Close Loop",
+  embody: "Embody",
 };
 
 export function GuidanceDisplay({
