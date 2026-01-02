@@ -1,64 +1,30 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useDeepgramVoice } from "@/lib/hooks/useDeepgramVoice";
 
 interface PostMeditationDumpProps {
   onComplete: (content: string) => void;
   onSkip: () => void;
 }
 
-// Speech recognition types
-interface SpeechRecognitionEvent extends Event {
-  resultIndex: number;
-  results: SpeechRecognitionResultList;
-}
-
-interface SpeechRecognitionResultList {
-  length: number;
-  item(index: number): SpeechRecognitionResult;
-  [index: number]: SpeechRecognitionResult;
-}
-
-interface SpeechRecognitionResult {
-  isFinal: boolean;
-  length: number;
-  item(index: number): SpeechRecognitionAlternative;
-  [index: number]: SpeechRecognitionAlternative;
-}
-
-interface SpeechRecognitionAlternative {
-  transcript: string;
-  confidence: number;
-}
-
-interface ISpeechRecognition extends EventTarget {
-  continuous: boolean;
-  interimResults: boolean;
-  lang: string;
-  onresult: ((event: SpeechRecognitionEvent) => void) | null;
-  onerror: ((event: Event) => void) | null;
-  onend: (() => void) | null;
-  start(): void;
-  stop(): void;
-  abort(): void;
-}
-
-type SpeechRecognitionConstructor = new () => ISpeechRecognition;
-
-// Check if speech recognition is available
-const getSpeechRecognition = (): SpeechRecognitionConstructor | null => {
-  if (typeof window === "undefined") return null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition || null;
-};
-
 export function PostMeditationDump({ onComplete, onSkip }: PostMeditationDumpProps) {
   const [content, setContent] = useState("");
-  const [isListening, setIsListening] = useState(false);
   const [showVoiceHint, setShowVoiceHint] = useState(true);
-  const [hasSpeechRecognition, setHasSpeechRecognition] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const recognitionRef = useRef<ISpeechRecognition | null>(null);
+
+  // Deepgram voice
+  const {
+    isRecording,
+    isProcessing: isTranscribing,
+    toggleRecording,
+  } = useDeepgramVoice({
+    onTranscript: (transcript) => {
+      setContent((prev) => (prev ? prev + " " + transcript : transcript));
+    },
+  });
+
+  const isListening = isRecording || isTranscribing;
 
   // Focus textarea on mount
   useEffect(() => {
@@ -68,51 +34,6 @@ export function PostMeditationDump({ onComplete, onSkip }: PostMeditationDumpPro
     const timer = setTimeout(() => setShowVoiceHint(false), 5000);
     return () => clearTimeout(timer);
   }, []);
-
-  // Initialize speech recognition
-  useEffect(() => {
-    const SpeechRecognitionClass = getSpeechRecognition();
-    if (!SpeechRecognitionClass) return;
-
-    setHasSpeechRecognition(true);
-    const recognition = new SpeechRecognitionClass();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
-      let transcript = "";
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        transcript += event.results[i][0].transcript;
-      }
-      setContent((prev) => prev + " " + transcript.trim());
-    };
-
-    recognition.onerror = () => {
-      setIsListening(false);
-    };
-
-    recognition.onend = () => {
-      setIsListening(false);
-    };
-
-    recognitionRef.current = recognition;
-
-    return () => {
-      recognition.stop();
-    };
-  }, []);
-
-  function toggleVoice() {
-    if (!recognitionRef.current) return;
-
-    if (isListening) {
-      recognitionRef.current.stop();
-      setIsListening(false);
-    } else {
-      recognitionRef.current.start();
-      setIsListening(true);
-    }
-  }
 
   function handleSubmit() {
     if (content.trim()) {
@@ -152,22 +73,32 @@ export function PostMeditationDump({ onComplete, onSkip }: PostMeditationDumpPro
           {isListening && (
             <div className="absolute top-2 right-2 flex items-center gap-2 text-accent">
               <span className="w-2 h-2 bg-accent rounded-full animate-pulse" />
-              <span className="text-sm">Listening...</span>
+              <span className="text-sm">
+                {isRecording ? "Recording..." : "Transcribing..."}
+              </span>
             </div>
           )}
         </div>
 
         {/* Voice button */}
-        {hasSpeechRecognition && (
-          <div className="mb-6">
-            <button
-              onClick={toggleVoice}
-              className={`flex items-center justify-center gap-3 w-full py-4 rounded-lg border transition-colors ${
-                isListening
-                  ? "bg-accent/10 border-accent text-accent"
-                  : "bg-bg-secondary border-border text-text-secondary hover:text-text-primary hover:border-text-muted"
-              }`}
-            >
+        <div className="mb-6">
+          <button
+            onClick={toggleRecording}
+            className={`flex items-center justify-center gap-3 w-full py-4 rounded-lg border transition-colors ${
+              isListening
+                ? "bg-accent/10 border-accent text-accent"
+                : "bg-bg-secondary border-border text-text-secondary hover:text-text-primary hover:border-text-muted"
+            }`}
+          >
+            {isRecording ? (
+              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <rect x="6" y="6" width="12" height="12" rx="2" />
+              </svg>
+            ) : isTranscribing ? (
+              <svg className="w-6 h-6 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+              </svg>
+            ) : (
               <svg
                 className="w-6 h-6"
                 fill="none"
@@ -181,16 +112,18 @@ export function PostMeditationDump({ onComplete, onSkip }: PostMeditationDumpPro
                   d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
                 />
               </svg>
-              <span>{isListening ? "Stop recording" : "Speak your insights"}</span>
-            </button>
-
-            {showVoiceHint && !content && (
-              <p className="text-center text-text-muted text-sm mt-2">
-                Voice often captures what the thinking mind misses
-              </p>
             )}
-          </div>
-        )}
+            <span>
+              {isRecording ? "Stop recording" : isTranscribing ? "Transcribing..." : "Speak your insights"}
+            </span>
+          </button>
+
+          {showVoiceHint && !content && (
+            <p className="text-center text-text-muted text-sm mt-2">
+              Voice often captures what the thinking mind misses
+            </p>
+          )}
+        </div>
 
         {/* Actions */}
         <div className="flex gap-4">

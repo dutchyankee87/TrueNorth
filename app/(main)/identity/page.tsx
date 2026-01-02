@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
+import { useDeepgramVoice } from "@/lib/hooks/useDeepgramVoice";
 
 interface IdentityAnchor {
   id: string;
@@ -12,49 +13,6 @@ interface IdentityAnchor {
   futureVision: string | null;
   leavingBehind: string[] | null;
   elevatedEmotions: string[] | null;
-}
-
-// Speech recognition types
-interface SpeechRecognitionEvent extends Event {
-  results: SpeechRecognitionResultList;
-  resultIndex: number;
-}
-
-interface SpeechRecognitionResultList {
-  length: number;
-  item(index: number): SpeechRecognitionResult;
-  [index: number]: SpeechRecognitionResult;
-}
-
-interface SpeechRecognitionResult {
-  isFinal: boolean;
-  length: number;
-  item(index: number): SpeechRecognitionAlternative;
-  [index: number]: SpeechRecognitionAlternative;
-}
-
-interface SpeechRecognitionAlternative {
-  transcript: string;
-  confidence: number;
-}
-
-interface SpeechRecognition extends EventTarget {
-  continuous: boolean;
-  interimResults: boolean;
-  lang: string;
-  onresult: ((event: SpeechRecognitionEvent) => void) | null;
-  onerror: ((event: Event) => void) | null;
-  onend: (() => void) | null;
-  start(): void;
-  stop(): void;
-  abort(): void;
-}
-
-declare global {
-  interface Window {
-    SpeechRecognition: new () => SpeechRecognition;
-    webkitSpeechRecognition: new () => SpeechRecognition;
-  }
 }
 
 const ELEVATED_EMOTIONS = [
@@ -70,12 +28,22 @@ export default function IdentityPage() {
   const [editingSection, setEditingSection] = useState<string | null>(null);
 
   // Voice input
-  const [isListening, setIsListening] = useState(false);
-  const [speechSupported, setSpeechSupported] = useState(false);
   const [voiceDump, setVoiceDump] = useState("");
   const [isProcessingVoice, setIsProcessingVoice] = useState(false);
   const [showVoiceModal, setShowVoiceModal] = useState(false);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+
+  // Deepgram voice
+  const {
+    isRecording,
+    isProcessing: isTranscribing,
+    toggleRecording,
+  } = useDeepgramVoice({
+    onTranscript: (transcript) => {
+      setVoiceDump((prev) => (prev ? prev + " " + transcript : transcript));
+    },
+  });
+
+  const isListening = isRecording || isTranscribing;
 
   // Form state
   const [formData, setFormData] = useState({
@@ -88,43 +56,6 @@ export default function IdentityPage() {
     leavingBehind: ["", "", ""],
     elevatedEmotions: [] as string[],
   });
-
-  // Initialize speech recognition
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (SpeechRecognition) {
-        setSpeechSupported(true);
-        const recognition = new SpeechRecognition();
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.lang = "en-US";
-
-        recognition.onresult = (event: SpeechRecognitionEvent) => {
-          let finalTranscript = "";
-          for (let i = event.resultIndex; i < event.results.length; i++) {
-            const transcript = event.results[i][0].transcript;
-            if (event.results[i].isFinal) {
-              finalTranscript += transcript + " ";
-            }
-          }
-          if (finalTranscript) {
-            setVoiceDump((prev) => prev + finalTranscript);
-          }
-        };
-
-        recognition.onerror = () => setIsListening(false);
-        recognition.onend = () => setIsListening(false);
-        recognitionRef.current = recognition;
-      }
-    }
-
-    return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.abort();
-      }
-    };
-  }, []);
 
   useEffect(() => {
     fetchIdentity();
@@ -212,16 +143,6 @@ export default function IdentityPage() {
     const updated = [...formData.leavingBehind];
     updated[index] = value;
     setFormData({ ...formData, leavingBehind: updated });
-  }
-
-  function toggleListening() {
-    if (!recognitionRef.current) return;
-    if (isListening) {
-      recognitionRef.current.stop();
-    } else {
-      recognitionRef.current.start();
-      setIsListening(true);
-    }
   }
 
   async function processVoiceDump() {
@@ -314,7 +235,7 @@ export default function IdentityPage() {
               </h1>
             </div>
             <div className="flex gap-2">
-              {speechSupported && !isEditing && (
+              {!isEditing && (
                 <button
                   onClick={() => setShowVoiceModal(true)}
                   className="p-3 rounded-full border border-stone-200 text-stone-500 hover:border-stone-300 hover:text-stone-700 transition-colors"
@@ -375,16 +296,20 @@ export default function IdentityPage() {
                 />
                 <button
                   type="button"
-                  onClick={toggleListening}
+                  onClick={toggleRecording}
                   className={`absolute bottom-4 right-4 w-10 h-10 rounded-full flex items-center justify-center transition-all ${
                     isListening
                       ? "bg-red-500 text-white animate-pulse"
                       : "bg-stone-200 text-stone-600 hover:bg-stone-300"
                   }`}
                 >
-                  {isListening ? (
+                  {isRecording ? (
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                       <rect x="6" y="6" width="12" height="12" rx="2" />
+                    </svg>
+                  ) : isTranscribing ? (
+                    <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
                     </svg>
                   ) : (
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -397,7 +322,7 @@ export default function IdentityPage() {
               {isListening && (
                 <p className="text-red-500 text-sm mb-4 flex items-center gap-2">
                   <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                  Listening...
+                  {isRecording ? "Recording..." : "Transcribing..."}
                 </p>
               )}
 

@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/shared";
+import { useDeepgramVoice } from "@/lib/hooks/useDeepgramVoice";
 
 interface ExtractedLoop {
   description: string;
@@ -51,49 +52,6 @@ const insightTypeConfig: Record<string, { icon: string; color: string; label: st
   release: { icon: "🍃", color: "bg-orange-100 text-orange-700 border-orange-200", label: "Release" },
 };
 
-// Speech recognition type declarations
-interface SpeechRecognitionEvent extends Event {
-  results: SpeechRecognitionResultList;
-  resultIndex: number;
-}
-
-interface SpeechRecognitionResultList {
-  length: number;
-  item(index: number): SpeechRecognitionResult;
-  [index: number]: SpeechRecognitionResult;
-}
-
-interface SpeechRecognitionResult {
-  isFinal: boolean;
-  length: number;
-  item(index: number): SpeechRecognitionAlternative;
-  [index: number]: SpeechRecognitionAlternative;
-}
-
-interface SpeechRecognitionAlternative {
-  transcript: string;
-  confidence: number;
-}
-
-interface SpeechRecognition extends EventTarget {
-  continuous: boolean;
-  interimResults: boolean;
-  lang: string;
-  onresult: ((event: SpeechRecognitionEvent) => void) | null;
-  onerror: ((event: Event) => void) | null;
-  onend: (() => void) | null;
-  start(): void;
-  stop(): void;
-  abort(): void;
-}
-
-declare global {
-  interface Window {
-    SpeechRecognition: new () => SpeechRecognition;
-    webkitSpeechRecognition: new () => SpeechRecognition;
-  }
-}
-
 export default function BrainDumpPage() {
   const router = useRouter();
   const [content, setContent] = useState("");
@@ -105,67 +63,18 @@ export default function BrainDumpPage() {
   const [applyingInsights, setApplyingInsights] = useState(false);
   const [insightsApplied, setInsightsApplied] = useState(false);
 
-  // Speech recognition state
-  const [isListening, setIsListening] = useState(false);
-  const [speechSupported, setSpeechSupported] = useState(false);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  // Deepgram voice input
+  const {
+    isRecording,
+    isProcessing: isTranscribing,
+    toggleRecording,
+  } = useDeepgramVoice({
+    onTranscript: (transcript) => {
+      setContent((prev) => (prev ? prev + " " + transcript : transcript));
+    },
+  });
 
-  // Initialize speech recognition
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (SpeechRecognition) {
-        setSpeechSupported(true);
-        const recognition = new SpeechRecognition();
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.lang = "en-US";
-
-        recognition.onresult = (event: SpeechRecognitionEvent) => {
-          let finalTranscript = "";
-
-          for (let i = event.resultIndex; i < event.results.length; i++) {
-            const transcript = event.results[i][0].transcript;
-            if (event.results[i].isFinal) {
-              finalTranscript += transcript + " ";
-            }
-          }
-
-          if (finalTranscript) {
-            setContent((prev) => prev + finalTranscript);
-          }
-        };
-
-        recognition.onerror = () => {
-          setIsListening(false);
-        };
-
-        recognition.onend = () => {
-          setIsListening(false);
-        };
-
-        recognitionRef.current = recognition;
-      }
-    }
-
-    return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.abort();
-      }
-    };
-  }, []);
-
-  function toggleListening() {
-    if (!recognitionRef.current) return;
-
-    if (isListening) {
-      recognitionRef.current.stop();
-      setIsListening(false);
-    } else {
-      recognitionRef.current.start();
-      setIsListening(true);
-    }
-  }
+  const isListening = isRecording || isTranscribing;
 
   async function handleSubmit() {
     if (!content.trim() || isProcessing) return;
@@ -375,36 +284,38 @@ export default function BrainDumpPage() {
                   />
 
                   {/* Microphone button */}
-                  {speechSupported && (
-                    <button
-                      type="button"
-                      onClick={toggleListening}
-                      disabled={isProcessing}
-                      className={`absolute bottom-4 right-4 w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-                        isListening
-                          ? "bg-red-500 text-white animate-pulse"
-                          : "bg-bg-secondary text-text-secondary hover:bg-bg-primary hover:text-text-primary"
-                      }`}
-                      title={isListening ? "Stop recording" : "Start recording"}
-                    >
-                      {isListening ? (
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                          <rect x="6" y="6" width="12" height="12" rx="1" />
-                        </svg>
-                      ) : (
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
-                        </svg>
-                      )}
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    onClick={toggleRecording}
+                    disabled={isProcessing}
+                    className={`absolute bottom-4 right-4 w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                      isListening
+                        ? "bg-red-500 text-white animate-pulse"
+                        : "bg-bg-secondary text-text-secondary hover:bg-bg-primary hover:text-text-primary"
+                    }`}
+                    title={isRecording ? "Stop recording" : isTranscribing ? "Transcribing..." : "Start recording"}
+                  >
+                    {isRecording ? (
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <rect x="6" y="6" width="12" height="12" rx="1" />
+                      </svg>
+                    ) : isTranscribing ? (
+                      <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
+                      </svg>
+                    )}
+                  </button>
                 </div>
 
                 {/* Recording indicator */}
                 {isListening && (
                   <div className="flex items-center gap-2 text-sm text-red-500">
                     <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                    Listening... speak freely
+                    {isRecording ? "Recording... speak freely" : "Transcribing..."}
                   </div>
                 )}
 
@@ -435,6 +346,23 @@ export default function BrainDumpPage() {
                   <li>• Share identity shifts or vision thoughts too</li>
                   <li>• It&apos;s okay to be messy and unorganized</li>
                 </ul>
+              </div>
+
+              {/* Wispr recommendation */}
+              <div className="mt-4 p-4 bg-accent/5 border border-accent/10 rounded-xl">
+                <p className="text-sm text-text-secondary">
+                  <span className="font-medium text-text-primary">Pro tip:</span>{" "}
+                  For the best voice experience, try{" "}
+                  <a
+                    href="https://wisprflow.ai"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-accent hover:underline"
+                  >
+                    Wispr Flow
+                  </a>
+                  {" "}- it works as a keyboard on mobile and desktop, auto-edits mistakes, and removes filler words.
+                </p>
               </div>
             </>
           ) : (
