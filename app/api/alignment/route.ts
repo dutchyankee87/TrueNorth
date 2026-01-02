@@ -42,7 +42,20 @@ export async function GET() {
       .limit(10);
 
     // Get the most recent guidance (today's action)
-    const todaysGuidance = recentGuidance.length > 0 ? recentGuidance[0] : null;
+    // If it's a "close_loop" guidance, verify the referenced loop is still open
+    let todaysGuidance = recentGuidance.length > 0 ? recentGuidance[0] : null;
+
+    if (todaysGuidance?.guidanceType === "close_loop" && todaysGuidance.referencedLoopId) {
+      const referencedLoop = await db
+        .select({ status: openLoops.status })
+        .from(openLoops)
+        .where(eq(openLoops.id, todaysGuidance.referencedLoopId));
+
+      // If the loop is archived or doesn't exist, don't show this guidance
+      if (referencedLoop.length === 0 || referencedLoop[0].status === "archived") {
+        todaysGuidance = null;
+      }
+    }
 
     // Fetch open loops count for context
     const openLoopsResult = await db
@@ -64,6 +77,7 @@ export async function GET() {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+
 
 
 
